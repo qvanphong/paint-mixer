@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mix acrylic and oil paint by the part, find formulas for any color, and build palettes." />
+    <meta name="color-scheme" content="light dark" />
+    <title>Color Mixer</title>
+    <script>
+      (function () {
+        var theme = null;
+        try {
+          theme = window.localStorage.getItem('color-mixer:theme');
+        } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-BkwQfIDM.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BNgYmrpB.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
