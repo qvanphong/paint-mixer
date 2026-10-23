@@ -1,0 +1,156 @@
+/* Design tokens. Components read these and never hardcode colors. */
+:root {
+  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --radius-s: 6px;
+  --radius: 12px;
+  --radius-l: 18px;
+  --gutter: 16px;
+}
+
+/* Light: warm paper, ink, burnt-sienna accent. */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4eee2;
+  --surface: #fffcf5;
+  --surface-2: #f0e8d8;
+  --surface-3: #e6dbc4;
+  --ink: #2a231c;
+  --ink-muted: #665a4c;
+  --line: #d9cdb6;
+  --line-strong: #a89877;
+  --accent: #a63f1c;
+  --accent-hover: #8c3316;
+  --on-accent: #ffffff;
+  --accent-soft: #f3ddd0;
+  --focus: #1f5fa8;
+  --danger: #a32626;
+  --on-danger: #ffffff;
+  --ok-bg: #dcecd9;
+  --ok-ink: #1f5128;
+  --warn-bg: #f6e6bd;
+  --warn-ink: #6b4a05;
+  --info-bg: #dce8f4;
+  --info-ink: #1d4a7a;
+  --swatch-edge: rgb(42 35 28 / 0.28);
+  --shadow: 0 1px 2px rgb(60 40 20 / 0.08), 0 4px 14px rgb(60 40 20 / 0.06);
+  --scrim: rgb(30 22 14 / 0.45);
+  --handle-ring: #ffffff;
+  --handle-edge: rgb(0 0 0 / 0.45);
+  --wheel-rim: rgb(42 35 28 / 0.35);
+  --dab-a: #2b57a8;
+  --dab-b: #f2b81a;
+  --dab-c: #d9432a;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1b1713;
+  --surface: #26211b;
+  --surface-2: #312a22;
+  --surface-3: #40362b;
+  --ink: #f2eadb;
+  --ink-muted: #b9ad9a;
+  --line: #43392d;
+  --line-strong: #7a6a54;
+  --accent: #e8905f;
+  --accent-hover: #f1a47a;
+  --on-accent: #1b1713;
+  --accent-soft: #4a2e20;
+  --focus: #8db8f2;
+  --danger: #e8837c;
+  --on-danger: #1b1713;
+  --ok-bg: #20361f;
+  --ok-ink: #a9dba6;
+  --warn-bg: #4a3a12;
+  --warn-ink: #f0d98f;
+  --info-bg: #1d3450;
+  --info-ink: #a9cdf2;
+  --swatch-edge: rgb(242 234 219 / 0.35);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 14px rgb(0 0 0 / 0.25);
+  --scrim: rgb(0 0 0 / 0.6);
+  --handle-ring: #ffffff;
+  --handle-edge: rgb(0 0 0 / 0.55);
+  --wheel-rim: rgb(242 234 219 / 0.4);
+  --dab-a: #5b86d6;
+  --dab-b: #f2c24a;
+  --dab-c: #ee6a4f;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 1rem/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+fieldset {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
