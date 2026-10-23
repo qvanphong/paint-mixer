@@ -1,13 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   MAX_CUSTOM_PAINTS,
+  NO_OWNED,
   loadCustomPaints,
+  loadOwned,
   loadPresets,
+  ownedTubes,
+  ownedWith,
+  ownedWithout,
   paintById,
   saveCustomPaints,
+  saveOwned,
   savePresets,
   type Catalog,
   type Hex,
+  type OwnedPaints,
   type Paint,
   type PaintId,
   type Preset,
@@ -26,16 +33,13 @@ function getStorage(): StorageLike | null {
 }
 
 /**
- * A list loaded from storage once and written back after every change made through `update`.
+ * A value loaded from storage once and written back after every change made through `update`.
  * `saveFailed` is true when the last write was refused.
  */
-function usePersistedList<T>(
-  load: (storage: StorageLike) => readonly T[],
-  save: (storage: StorageLike, items: readonly T[]) => boolean,
-) {
-  const [items, setItems] = useState<readonly T[]>(() => {
+function usePersisted<T>(load: (storage: StorageLike) => T, fallback: T, save: (storage: StorageLike, value: T) => boolean) {
+  const [value, setValue] = useState<T>(() => {
     const storage = getStorage();
-    return storage ? load(storage) : [];
+    return storage ? load(storage) : fallback;
   });
   const [saveFailed, setSaveFailed] = useState(false);
   const dirty = useRef(false);
@@ -44,15 +48,15 @@ function usePersistedList<T>(
     if (!dirty.current) return;
     dirty.current = false;
     const storage = getStorage();
-    setSaveFailed(!(storage && save(storage, items)));
-  }, [items, save]);
+    setSaveFailed(!(storage && save(storage, value)));
+  }, [value, save]);
 
-  const update = useCallback((fn: (prev: readonly T[]) => readonly T[]) => {
+  const update = useCallback((fn: (prev: T) => T) => {
     dirty.current = true;
-    setItems(fn);
+    setValue(fn);
   }, []);
 
-  return { items, saveFailed, update };
+  return { value, saveFailed, update };
 }
 
 export interface PresetsApi {
@@ -71,8 +75,9 @@ const newId = () => `${Date.now().toString(36)}-${Math.random().toString(36).sli
 
 /** Presets are validated against `catalog` on first load, so the custom paints must already be loaded. */
 export function usePresets(catalog: Catalog): PresetsApi {
-  const { items: presets, saveFailed, update } = usePersistedList(
+  const { value: presets, saveFailed, update } = usePersisted<readonly Preset[]>(
     (storage) => loadPresets(storage, catalog),
+    [],
     savePresets,
   );
 
@@ -113,7 +118,7 @@ export interface CustomPaintsApi {
 }
 
 export function useCustomPaints(): CustomPaintsApi {
-  const { items: paints, saveFailed, update } = usePersistedList(loadCustomPaints, saveCustomPaints);
+  const { value: paints, saveFailed, update } = usePersisted<readonly Paint[]>(loadCustomPaints, [], saveCustomPaints);
 
   return {
     paints,
@@ -123,6 +128,45 @@ export function useCustomPaints(): CustomPaintsApi {
       update((prev) => (prev.length >= MAX_CUSTOM_PAINTS || prev.some((p) => p.id === paint.id) ? prev : [...prev, paint])),
     update: (paint) => update((prev) => prev.map((p) => (p.id === paint.id ? paint : p))),
     remove: (id) => update((prev) => prev.filter((p) => p.id !== id)),
+  };
+}
+
+export interface OwnedPaintsApi {
+  owned: OwnedPaints;
+  /** The owned paints the finder can use (whites excluded), in catalog order. */
+  tubes: readonly Paint[];
+  saveFailed: boolean;
+  setEnabled(enabled: boolean): void;
+  /** Replaces the whole owned list, which is what the dialog does on Save. */
+  setOwned(ids: readonly PaintId[]): void;
+  add(id: PaintId): void;
+  remove(id: PaintId): void;
+}
+
+/** Owned ids are validated against `catalog` on first load, so the custom paints must already be loaded. */
+export function useOwnedPaints(catalog: Catalog): OwnedPaintsApi {
+  const { value: owned, saveFailed, update } = usePersisted<OwnedPaints>(
+    (storage) => loadOwned(storage, catalog),
+    NO_OWNED,
+    saveOwned,
+  );
+
+  const { ids } = owned;
+  const tubes = useMemo(() => ownedTubes(ids, catalog), [ids, catalog]);
+
+  return {
+    owned,
+    tubes,
+    saveFailed,
+    setEnabled: (enabled) => update((prev) => (prev.enabled === enabled ? prev : { ...prev, enabled })),
+    setOwned: (ids) =>
+      update((prev) => {
+        const next = [...new Set(ids)];
+        const same = next.length === prev.ids.length && next.every((id, i) => id === prev.ids[i]);
+        return same ? prev : { ...prev, ids: next };
+      }),
+    add: (id) => update((prev) => ownedWith(prev, id)),
+    remove: (id) => update((prev) => ownedWithout(prev, id)),
   };
 }
 

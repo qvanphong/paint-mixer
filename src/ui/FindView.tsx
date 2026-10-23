@@ -1,6 +1,7 @@
-import { useEffect, useId, useState, type Dispatch } from 'react';
-import { describeRecipe, findFormulas, type Catalog, type Formula, type Hex, type Preset } from '../core/index.ts';
+import { useEffect, useId, useMemo, useState, type Dispatch } from 'react';
+import { WHITE, describeRecipe, findFormulas, type Catalog, type Formula, type Hex, type PaintId, type Preset } from '../core/index.ts';
 import { HexField, Swatch } from './controls.tsx';
+import type { OwnedPaintsApi } from './hooks.ts';
 import type { Action } from './state.ts';
 import { strings } from './strings.ts';
 
@@ -10,34 +11,50 @@ const SEARCH_DELAY_MS = 150;
 interface Search {
   target: Hex;
   catalog: Catalog;
+  only: ReadonlySet<PaintId> | undefined;
   formulas: Formula[];
 }
 
-function useFormulas(target: Hex, catalog: Catalog): { formulas: Formula[]; pending: boolean } {
+/** Whether every paint of the recipe may still be shown: it exists in the catalog and, when filtering, is owned or white. */
+const isShowable = (f: Formula, catalog: Catalog, only: ReadonlySet<PaintId> | undefined) =>
+  f.recipe.every((p) => catalog.byId(p.paintId) && (!only || p.paintId === WHITE.id || only.has(p.paintId)));
+
+/** `only` is the owned set when the filter is on, undefined when it is off. `enabled` is false when there is nothing to search with. */
+function useFormulas(target: Hex, catalog: Catalog, only: ReadonlySet<PaintId> | undefined, enabled: boolean) {
   const [done, setDone] = useState<Search | null>(null);
   useEffect(() => {
+    if (!enabled) return;
     const timer = window.setTimeout(
-      () => setDone({ target, catalog, formulas: findFormulas(target, {}, catalog) }),
+      () => setDone({ target, catalog, only, formulas: findFormulas(target, { only }, catalog) }),
       SEARCH_DELAY_MS,
     );
     return () => window.clearTimeout(timer);
-  }, [target, catalog]);
-  // Results from a previous catalog stay on screen, dimmed, while the new search runs, but never a recipe
-  // whose paint was just deleted: the rest of the UI would look that paint up.
-  const formulas = (done?.formulas ?? []).filter((f) => f.recipe.every((p) => catalog.byId(p.paintId)));
-  return { formulas, pending: done?.target !== target || done.catalog !== catalog };
+  }, [target, catalog, only, enabled]);
+  if (!enabled) return { formulas: [], pending: false };
+  // Results from a previous search stay on screen, dimmed, while the new one runs, but never a recipe the rest
+  // of the UI could not show: a deleted paint would fail its lookup, and an unowned paint breaks the filter.
+  const formulas = (done?.formulas ?? []).filter((f) => isShowable(f, catalog, only));
+  const current = done?.target === target && done.catalog === catalog && done.only === only;
+  return { formulas, pending: !current };
 }
 
 interface Props {
   target: Hex;
   catalog: Catalog;
   presets: readonly Preset[];
+  owned: OwnedPaintsApi;
+  onEditOwned(): void;
   dispatch: Dispatch<Action>;
 }
 
-export function FindView({ target, catalog, presets, dispatch }: Props) {
-  const { formulas, pending } = useFormulas(target, catalog);
+export function FindView({ target, catalog, presets, owned, onEditOwned, dispatch }: Props) {
+  const restricted = owned.owned.enabled;
+  const ownedCount = owned.tubes.length;
+  const noOwnedPaints = restricted && ownedCount === 0;
+  const only = useMemo(() => (restricted ? new Set(owned.tubes.map((p) => p.id)) : undefined), [restricted, owned.tubes]);
+  const { formulas, pending } = useFormulas(target, catalog, only, !noOwnedPaints);
   const presetId = useId();
+  const ownedCountId = useId();
 
   return (
     <section className="view" aria-labelledby="view-find">
@@ -78,6 +95,29 @@ export function FindView({ target, catalog, presets, dispatch }: Props) {
         </div>
       </section>
 
+      <section className="card owned-filter" aria-label={strings.owned.filterLabel}>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={restricted}
+            aria-describedby={ownedCountId}
+            onChange={(e) => owned.setEnabled(e.target.checked)}
+          />
+          <span>{strings.owned.filterLabel}</span>
+        </label>
+        <p id={ownedCountId} className="muted small owned-count">
+          {strings.owned.count(ownedCount)}
+        </p>
+        <button type="button" className="btn btn-s" onClick={onEditOwned}>
+          {strings.owned.edit}
+        </button>
+        {owned.saveFailed && (
+          <p className="notice owned-notice" role="alert">
+            {strings.owned.storageFailed}
+          </p>
+        )}
+      </section>
+
       <section className="results" aria-labelledby="find-results" aria-busy={pending}>
         <div className="results-head">
           <h3 id="find-results">{strings.find.resultsHeading}</h3>
@@ -85,10 +125,29 @@ export function FindView({ target, catalog, presets, dispatch }: Props) {
             {pending ? strings.find.searching : ''}
           </p>
         </div>
-        {formulas.length === 0 && !pending ? <p className="muted">{strings.find.idle}</p> : null}
+        {restricted && !noOwnedPaints && <p className="muted small">{strings.owned.usingHeader(ownedCount)}</p>}
+        {noOwnedPaints && (
+          <div className="owned-empty">
+            <p>
+              <strong>{strings.owned.emptyTitle}</strong>
+            </p>
+            <p className="muted">{strings.owned.emptyBody}</p>
+            <button type="button" className="btn" onClick={onEditOwned}>
+              {strings.owned.edit}
+            </button>
+          </div>
+        )}
+        {formulas.length === 0 && !pending && !noOwnedPaints ? <p className="muted">{strings.find.idle}</p> : null}
         <ol className={`formula-list${pending ? ' is-pending' : ''}`}>
           {formulas.map((f) => (
-            <FormulaItem key={describeRecipe(f.recipe, catalog)} formula={f} target={target} catalog={catalog} dispatch={dispatch} />
+            <FormulaItem
+              key={describeRecipe(f.recipe, catalog)}
+              formula={f}
+              target={target}
+              catalog={catalog}
+              hintMorePaints={restricted}
+              dispatch={dispatch}
+            />
           ))}
         </ol>
         <p className="muted small">{strings.find.deltaENote}</p>
@@ -97,7 +156,16 @@ export function FindView({ target, catalog, presets, dispatch }: Props) {
   );
 }
 
-function FormulaItem({ formula, target, catalog, dispatch }: { formula: Formula; target: Hex; catalog: Catalog; dispatch: Dispatch<Action> }) {
+interface ItemProps {
+  formula: Formula;
+  target: Hex;
+  catalog: Catalog;
+  /** True when the search was limited to owned paints, where an approximate match may improve with more. */
+  hintMorePaints: boolean;
+  dispatch: Dispatch<Action>;
+}
+
+function FormulaItem({ formula, target, catalog, hintMorePaints, dispatch }: ItemProps) {
   const text = describeRecipe(formula.recipe, catalog);
   return (
     <li className="formula">
@@ -116,6 +184,7 @@ function FormulaItem({ formula, target, catalog, dispatch }: { formula: Formula;
           <span className="mono muted">{formula.result}</span>
         </p>
         <p className="recipe-text">{text}</p>
+        {hintMorePaints && formula.match === 'approx' && <p className="muted small">{strings.find.approxHint}</p>}
         <button
           type="button"
           className="btn"

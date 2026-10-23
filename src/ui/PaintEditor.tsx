@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useId, useMemo, useRef, useState, type FormEvent } from 'react';
 import { NAME_MAX_LENGTH, MAX_PIGMENT_LENGTH, newCustomPaintId, type Paint, type PaintRole } from '../core/index.ts';
 import { HexField, Slider, Swatch } from './controls.tsx';
 import { eyeDropperSupported, pickScreenColor } from './eyedropper.ts';
@@ -17,6 +17,7 @@ import {
   type PaintDraft,
 } from './paintDraft.ts';
 import { strings } from './strings.ts';
+import { useModalDialog } from './useModalDialog.ts';
 
 const ROLE_OPTIONS: readonly PaintRole[] = ['chromatic', 'earth', 'black', 'white'];
 
@@ -33,23 +34,12 @@ interface Props {
  */
 export function PaintEditor({ paint, onSubmit, onClose }: Props) {
   const t = strings.paintEditor;
-  const dialog = useRef<HTMLDialogElement>(null);
+  const dialog = useModalDialog();
   const nameInput = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState<PaintDraft>(() => (paint ? draftFromPaint(paint) : DEFAULT_DRAFT));
   const [showNameError, setShowNameError] = useState(false);
   const [failed, setFailed] = useState(false);
   const ids = { title: useId(), name: useId(), nameError: useId(), role: useId(), roleHint: useId(), pigment: useId() };
-
-  useEffect(() => {
-    const element = dialog.current;
-    if (!element) return;
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    element.showModal();
-    return () => {
-      element.close();
-      opener?.focus();
-    };
-  }, []);
 
   const set = <K extends keyof PaintDraft>(key: K, value: PaintDraft[K]) => setDraft((d) => ({ ...d, [key]: value }));
   const preview = useMemo(() => previewMixes(draft), [draft]);

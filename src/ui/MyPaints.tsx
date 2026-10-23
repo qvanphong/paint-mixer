@@ -2,19 +2,21 @@ import { useRef, useState } from 'react';
 import { MAX_CUSTOM_PAINTS, type Paint, type PaintId, type Preset } from '../core/index.ts';
 import { countPresetsUsing } from './cascade.ts';
 import { Swatch } from './controls.tsx';
-import type { CustomPaintsApi } from './hooks.ts';
+import type { CustomPaintsApi, OwnedPaintsApi } from './hooks.ts';
 import { PlusIcon } from './icons.tsx';
 import { strings } from './strings.ts';
 
 interface Props {
   api: CustomPaintsApi;
   presets: readonly Preset[];
+  owned: OwnedPaintsApi;
+  onEditOwned(): void;
   onAdd(): void;
   onEdit(paint: Paint): void;
   onDelete(id: PaintId): void;
 }
 
-export function MyPaints({ api, presets, onAdd, onEdit, onDelete }: Props) {
+export function MyPaints({ api, presets, owned, onEditOwned, onAdd, onEdit, onDelete }: Props) {
   const heading = useRef<HTMLHeadingElement>(null);
   const t = strings.customPaints;
 
@@ -52,6 +54,17 @@ export function MyPaints({ api, presets, onAdd, onEdit, onDelete }: Props) {
         <span>{t.add}</span>
       </button>
       {!api.canAdd && <p className="muted small">{t.limitReached(MAX_CUSTOM_PAINTS)}</p>}
+      <div className="my-paints-owned">
+        <p className="muted small">{strings.owned.myPaintsSummary(owned.tubes.length)}</p>
+        {owned.saveFailed && (
+          <p className="notice" role="alert">
+            {strings.owned.storageFailed}
+          </p>
+        )}
+        <button type="button" className="btn" onClick={onEditOwned}>
+          {strings.owned.edit}
+        </button>
+      </div>
     </section>
   );
 }

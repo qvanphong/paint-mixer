@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { makeCatalog, type Paint, type PaintId, type Preset } from './core/index.ts';
 import { FindView } from './ui/FindView.tsx';
-import { useCustomPaints, usePresets, useTheme } from './ui/hooks.ts';
+import { useCustomPaints, useOwnedPaints, usePresets, useTheme } from './ui/hooks.ts';
 import { MoonIcon, SunIcon } from './ui/icons.tsx';
 import { MixView } from './ui/MixView.tsx';
+import { OwnedPaintsDialog } from './ui/OwnedPaintsDialog.tsx';
 import { PaintEditor } from './ui/PaintEditor.tsx';
 import { PalettesView } from './ui/PalettesView.tsx';
 import { PresetsPanel } from './ui/PresetsPanel.tsx';
@@ -37,7 +38,9 @@ export default function App() {
   const customPaints = useCustomPaints();
   const catalog = useMemo(() => makeCatalog(customPaints.paints), [customPaints.paints]);
   const presets = usePresets(catalog);
+  const owned = useOwnedPaints(catalog);
   const [editor, setEditor] = useState<EditorRequest | null>(null);
+  const [ownedDialogOpen, setOwnedDialogOpen] = useState(false);
   const { theme, toggle } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -70,15 +73,17 @@ export default function App() {
     if (editor?.paint) customPaints.update(paint);
     else {
       customPaints.add(paint);
+      owned.add(paint.id);
       editor?.onCreated?.(paint.id);
     }
     setEditor(null);
   };
 
-  // One handler, so React renders the catalog, the presets and the mix without the paint in one pass.
+  // One handler, so React renders the catalog, the presets, the owned list and the mix without the paint in one pass.
   const deleteCustomPaint = (paintId: PaintId) => {
     customPaints.remove(paintId);
     presets.removeUsing(paintId);
+    owned.remove(paintId);
     dispatch({ type: 'customPaintDeleted', paintId });
   };
 
@@ -139,7 +144,16 @@ export default function App() {
               onSave={presets.addRecipe}
             />
           )}
-          {state.view === 'find' && <FindView target={state.target} catalog={catalog} presets={presets.presets} dispatch={dispatch} />}
+          {state.view === 'find' && (
+            <FindView
+              target={state.target}
+              catalog={catalog}
+              presets={presets.presets}
+              owned={owned}
+              onEditOwned={() => setOwnedDialogOpen(true)}
+              dispatch={dispatch}
+            />
+          )}
           {state.view === 'palettes' && (
             <PalettesView
               main={state.main}
@@ -163,6 +177,8 @@ export default function App() {
             api={presets}
             catalog={catalog}
             customPaints={customPaints}
+            owned={owned}
+            onEditOwned={() => setOwnedDialogOpen(true)}
             onAddCustom={() => addCustomPaint()}
             onEditCustom={(paint) => setEditor({ paint })}
             onDeleteCustom={deleteCustomPaint}
@@ -179,6 +195,17 @@ export default function App() {
       </footer>
 
       {editor && <PaintEditor paint={editor.paint} onSubmit={saveCustomPaint} onClose={() => setEditor(null)} />}
+      {ownedDialogOpen && (
+        <OwnedPaintsDialog
+          catalog={catalog}
+          initial={owned.tubes.map((p) => p.id)}
+          onSave={(ids) => {
+            owned.setOwned(ids);
+            setOwnedDialogOpen(false);
+          }}
+          onClose={() => setOwnedDialogOpen(false)}
+        />
+      )}
     </div>
   );
 }

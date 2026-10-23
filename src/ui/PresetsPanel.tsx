@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type Ref } from 'react
 import { describeRecipe, type Catalog, type Paint, type PaintId, type Preset } from '../core/index.ts';
 import { Swatch } from './controls.tsx';
 import { CloseIcon } from './icons.tsx';
-import type { CustomPaintsApi, PresetsApi } from './hooks.ts';
+import type { CustomPaintsApi, OwnedPaintsApi, PresetsApi } from './hooks.ts';
 import { MyPaints } from './MyPaints.tsx';
 import { strings } from './strings.ts';
 
@@ -10,6 +10,8 @@ interface Props {
   api: PresetsApi;
   catalog: Catalog;
   customPaints: CustomPaintsApi;
+  owned: OwnedPaintsApi;
+  onEditOwned(): void;
   onAddCustom(): void;
   onEditCustom(paint: Paint): void;
   onDeleteCustom(id: PaintId): void;
@@ -18,7 +20,7 @@ interface Props {
   closeRef: Ref<HTMLButtonElement>;
 }
 
-export function PresetsPanel({ api, catalog, customPaints, onAddCustom, onEditCustom, onDeleteCustom, onLoad, onClose, closeRef }: Props) {
+export function PresetsPanel({ api, catalog, customPaints, owned, onEditOwned, onAddCustom, onEditCustom, onDeleteCustom, onLoad, onClose, closeRef }: Props) {
   const mixes = api.presets.filter((p) => p.kind === 'recipe');
   const colors = api.presets.filter((p) => p.kind === 'color');
 
@@ -46,6 +48,8 @@ export function PresetsPanel({ api, catalog, customPaints, onAddCustom, onEditCu
       <MyPaints
         api={customPaints}
         presets={api.presets}
+        owned={owned}
+        onEditOwned={onEditOwned}
         onAdd={onAddCustom}
         onEdit={onEditCustom}
         onDelete={onDeleteCustom}

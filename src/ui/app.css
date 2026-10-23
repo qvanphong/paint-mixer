@@ -1354,3 +1354,130 @@ section > h3 {
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* ---------- paints I own ---------- */
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.check input,
+.owned-item input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.card.owned-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 8px 16px;
+}
+
+.owned-count {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.owned-notice {
+  flex: 1 1 100%;
+}
+
+.owned-empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.my-paints-owned {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.owned-dialog .dialog-form {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: calc(100dvh - 2 * var(--gutter) - 2px);
+}
+
+.owned-head {
+  display: grid;
+  gap: 8px;
+}
+
+.owned-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.owned-selected {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.owned-list {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-height: 0;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.owned-group {
+  display: grid;
+  gap: 2px;
+}
+
+.owned-legend {
+  padding: 8px 4px 4px;
+  color: var(--ink-muted);
+  font: 700 0.75rem/1.2 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.owned-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.owned-item:hover {
+  background: var(--surface-2);
+}
+
+.owned-item-fixed {
+  cursor: default;
+}
+
+.owned-item-fixed:hover {
+  background: transparent;
+}
+
+.owned-note {
+  padding: 0 8px 4px;
+}

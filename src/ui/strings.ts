@@ -89,12 +89,35 @@ export const strings = {
     openInMixer: 'Open in Mixer',
     openInMixerLabel: (recipe: string) => `Open in Mixer: ${recipe}`,
     deltaE: (n: number) => `ΔE ${n.toFixed(1)}`,
+    approxHint: 'Adding more paints to your set may get closer.',
     deltaENote: 'ΔE measures how different two colors look. Under 2 is hard to see, under 5 is close.',
     match: {
       exact: 'Exact match',
       close: 'Close match',
       approx: 'Approximate',
     } satisfies Record<MatchQuality, string>,
+  },
+
+  owned: {
+    filterLabel: 'Only use paints I own',
+    count: (n: number) => (n === 0 ? 'No paints chosen yet' : `${n} ${n === 1 ? 'paint' : 'paints'} owned`),
+    edit: 'Edit owned paints',
+    emptyTitle: 'No paints to search with',
+    emptyBody: 'Your owned list has no paints besides white. Choose the paints you own, or turn the filter off to use the whole catalog.',
+    usingHeader: (n: number) => `Using your ${n} ${n === 1 ? 'paint' : 'paints'} plus white`,
+    storageFailed: 'This browser would not store your owned paints. They will be lost when you close the page.',
+    myPaintsSummary: (n: number) => (n === 0 ? 'No owned paints chosen.' : `You own ${n} ${n === 1 ? 'paint' : 'paints'}.`),
+    dialog: {
+      title: 'Paints I own',
+      intro: 'Tick the tubes you have. Find formula can then mix only from these, plus Titanium White.',
+      selected: (n: number, total: number) => `${n} of ${total} selected`,
+      selectAll: 'Select all',
+      clear: 'Clear',
+      alwaysIncluded: 'Always included',
+      whiteNote: 'Find formula always uses Titanium White. Other whites are not used.',
+      save: 'Save',
+      cancel: 'Cancel',
+    },
   },
 
   palettes: {

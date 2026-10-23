@@ -51,6 +51,17 @@ export {
   type RecipePart,
 } from './mix.ts';
 export { findFormulas, matchQuality, type FindFormulasOptions, type Formula, type MatchQuality } from './formula.ts';
+export {
+  NO_OWNED,
+  OWNED_KEY,
+  loadOwned,
+  ownedTubes,
+  ownedWith,
+  ownedWithout,
+  parseOwned,
+  saveOwned,
+  type OwnedPaints,
+} from './owned.ts';
 export { hueToWheel, wheelToHue, type WheelMode } from './wheel.ts';
 export { HARMONY_RULES, paletteFor, suggestPalettes, type HarmonyRule, type Palette } from './harmony.ts';
 export {

@@ -1,7 +1,7 @@
 import { deltaE, deltaEOklab, hexToOklab, type Hex, type Oklab } from './color.ts';
 import { fastMixOklab, fastPaint, type FastPaint } from './fastmix.ts';
 import { mixRecipe, type Recipe } from './mix.ts';
-import { BUILTIN_CATALOG, WHITE, type Catalog, type Paint } from './paints.ts';
+import { BUILTIN_CATALOG, WHITE, type Catalog, type Paint, type PaintId } from './paints.ts';
 
 export type MatchQuality = 'exact' | 'close' | 'approx';
 
@@ -15,6 +15,11 @@ export interface Formula {
 export interface FindFormulasOptions {
   /** Number of formulas to return. Default 5. */
   limit?: number;
+  /**
+   * Restrict the tubes to these paints. Titanium White stays available either way. An empty set leaves only
+   * the white candidate, so callers should check for it first.
+   */
+  only?: ReadonlySet<PaintId>;
 }
 
 const MAX_TOTAL_PARTS = 12;
@@ -139,7 +144,8 @@ export function findFormulas(target: Hex, opts: FindFormulasOptions = {}, catalo
   const search = new Search(hexToOklab(target));
   search.candidates.push({ dE: deltaE(target, WHITE.hex), paints: [WHITE], parts: [1] });
 
-  const tubes = catalog.paints.filter((p) => p.role !== 'white');
+  const { only } = opts;
+  const tubes = catalog.paints.filter((p) => p.role !== 'white' && (!only || only.has(p.id)));
   const bestByPaint = new Map<Paint, number>();
   const note = (p: Paint, dE: number) => bestByPaint.set(p, Math.min(bestByPaint.get(p) ?? Infinity, dE));
   for (const a of tubes) note(a, search.run([a]));

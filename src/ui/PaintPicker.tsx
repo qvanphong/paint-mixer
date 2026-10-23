@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { MAX_CUSTOM_PAINTS, isCustomPaint, type Catalog, type PaintId, type PaintRole } from '../core/index.ts';
+import { MAX_CUSTOM_PAINTS, isCustomPaint, type Catalog, type PaintId } from '../core/index.ts';
 import { Swatch } from './controls.tsx';
+import { ROLE_ORDER } from './paintRoles.ts';
 import { ChevronIcon, PlusIcon } from './icons.tsx';
 import { strings } from './strings.ts';
-
-const ROLE_ORDER: readonly PaintRole[] = ['white', 'black', 'chromatic', 'earth'];
 
 interface Props {
   /** Accessible name of the trigger when its visible content is a paint, not a verb. */

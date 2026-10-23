@@ -109,6 +109,22 @@ Deleting or editing: editing keeps the id so saved recipes follow the new color.
 
 UI: an "Add custom paint" entry at the end of the paint picker, plus a "My paints" section in the Saved panel (list, edit, delete, add). One `PaintEditor` dialog does add and edit: name, color (native picker, hex field, and the EyeDropper API button when `'EyeDropper' in window`), strength slider with plain labels (weak, normal, strong) and typical examples, paint type select, optional pigment code, and a live preview showing the paint alone, mixed 1:1 with titanium white, and mixed 1:1 with ultramarine so the user can calibrate strength by eye. Custom paints appear in the picker under their role group with a "Custom" marker, are included in Find formula, and are used everywhere a paint name is shown.
 
+## Paints I own
+
+Painters own a handful of tubes, so Find formula can restrict itself to them.
+
+Data shape: `OwnedPaints = { enabled: boolean; ids: readonly PaintId[] }`, persisted at `color-mixer:owned-paints:v1` as `{version: 1, enabled, ids}`. `ids` may name built-in or custom paints. `src/core/owned.ts` has `parseOwned` / `loadOwned(storage, catalog)` (drops ids missing from the catalog and duplicates, never throws, default `{enabled: false, ids: []}`) and `saveOwned` (returns false when storage refuses), in the same style as presets and custom paints. The UI loads custom paints first, then owned against the catalog.
+
+Finder: `FindFormulasOptions` gains `only?: ReadonlySet<PaintId>`. When present, the tube pool is the catalog's non-white paints whose id is in `only`. White is always available through `WHITE` (Titanium White), so the owned set never needs to include a white. A custom paint with the white role is not used by the finder, as before. With an empty pool the finder returns only the white-only candidate, so the UI must not call it that way.
+
+UI:
+- Find formula gets a checkbox "Only use paints I own" with the owned count and an "Edit owned paints" button. State persists.
+- If the filter is on and no non-white paint is owned, show an empty state that says so and offers the edit button, and do not search.
+- A new `OwnedPaintsDialog` (accessible modal `<dialog>`, same patterns as `PaintEditor`) lists every catalog paint grouped by role with swatch, name, pigment and a "Custom" marker, a checkbox each, a live count, "Select all" and "Clear". Changes apply on Save, Cancel discards. Titanium White is shown as always included, not as a checkbox.
+- The same button also lives in the "My paints" section of the Saved panel.
+- Adding a custom paint marks it owned. Deleting a custom paint removes it from the owned list. Edits keep the id so nothing changes.
+- When the finder runs with the filter on, the results header says "Using your N paints plus white" and a result with match `approx` shows a hint that adding more paints may get closer.
+
 ## Scope notes
 
 - English UI. The reference is Vietnamese. Strings live in `src/ui/strings.ts` so a Vietnamese table can be added.
