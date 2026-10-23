@@ -39,7 +39,7 @@ Organizing structure: the paint catalog is a typed table (`PAINTS`, `paintById`)
 | --- | --- |
 | `engine.ts` | Only importer of `spectral.js`. Exports `mixHex(inputs: {hex: Hex; tinting: number; parts: number}[]): Hex`. |
 | `color.ts` | `parseHex`, `toHex`, `hexToOklab`, `oklabToHex`, `hexToHsv`, `hsvToHex`, `deltaE(a, b)` (OKLab euclidean x100), `luminance`. |
-| `paints.ts` | `PAINTS`: about 24 real artist paints (white, black, yellows, ochre, oranges, reds, magentas, violet, blues, greens, earths). Name, pigment code (PW6, PB29, PY35, PR108, PBr7...), masstone hex, tinting strength. |
+| `paints.ts` | `PAINTS`: about 24 real artist paints (white, black, yellows, ochre, oranges, reds, magentas, violet, blues, greens, earths), plus the 18-color Golden Maple miniature set (hex estimated from the product photo). Name, pigment code (PW6, PB29, PY35, PR108, PBr7...), masstone hex, tinting strength. |
 | `mix.ts` | `mixRecipe(recipe: Recipe): Hex` (throws on an empty recipe). `describeRecipe(recipe): string`. `withWhite(recipe, extra)`, `tints(recipe, whiteParts[]): Hex[]`. `ratioToParts(a, b, share)` where `share` is a's fraction in (0, 1) and the minority paint gets 1 part; `partsToShare(aParts, bParts)` is its inverse. |
 | `formula.ts` | `findFormulas(target: Hex, opts?): Formula[]` where `Formula = { recipe: Recipe; result: Hex; deltaE: number; match: 'exact' \| 'close' \| 'approx' }`. |
 | `wheel.ts` | RYB and RGB color wheels: `hueToWheel(h, mode)`, `wheelToHue(w, mode)`. |

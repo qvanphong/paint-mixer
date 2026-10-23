@@ -19,10 +19,10 @@ const PURPLE: [number, number] = [285, 355];
 const BLUE: [number, number] = [240, 285];
 
 describe('paint catalog', () => {
-  it('has unique ids and exactly one white and one black', () => {
+  it('has unique ids and keeps the built-in white and black roles', () => {
     expect(new Set(PAINTS.map((p) => p.id)).size).toBe(PAINTS.length);
-    expect(PAINTS.filter((p) => p.role === 'white')).toHaveLength(1);
-    expect(PAINTS.filter((p) => p.role === 'black')).toHaveLength(1);
+    expect(WHITE.role).toBe('white');
+    expect(PAINTS.find((p) => p.id === 'ivory-black')?.role).toBe('black');
   });
 });
 

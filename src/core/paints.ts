@@ -44,6 +44,26 @@ const ROWS: PaintRow[] = [
   ['venetian-red', 'Venetian Red', 'PR101', '#8C3A2E', 0.8, 'earth'],
   ['raw-umber', 'Raw Umber', 'PBr7', '#594633', 0.7, 'earth'],
   ['burnt-umber', 'Burnt Umber', 'PBr7', '#4C2E22', 0.8, 'earth'],
+  // Golden Maple 18-color miniature set. Pigment column holds the product code (GM.xxx), not a pigment index.
+  // Hex values are estimated from the product photo; strengths are defaults to calibrate by test mixing.
+  ['gm-white', 'Golden Maple White', 'GM.001', '#EFEFEC', 0.55, 'white'],
+  ['gm-bright-red', 'Golden Maple Bright Red', 'GM.003', '#D8100C', 1, 'chromatic'],
+  ['gm-orange', 'Golden Maple Orange', 'GM.083', '#ED580A', 1, 'chromatic'],
+  ['gm-medium-yellow', 'Golden Maple Medium Yellow', 'GM.002', '#EFBB0A', 1, 'chromatic'],
+  ['gm-bright-yellow', 'Golden Maple Bright Yellow', 'GM.949', '#EEC90A', 1, 'chromatic'],
+  ['gm-warm-green', 'Golden Maple Warm Green', 'GM.044', '#60AF0F', 1, 'chromatic'],
+  ['gm-turquoise', 'Golden Maple Turquoise', 'GM.808', '#0F9D8B', 1, 'chromatic'],
+  ['gm-dark-blue', 'Golden Maple Dark Blue', 'GM.004', '#0B2B82', 1, 'chromatic'],
+  ['gm-sky-blue', 'Golden Maple Sky Blue', 'GM.118', '#11A8C0', 1, 'chromatic'],
+  ['gm-purple', 'Golden Maple Purple', 'GM.592', '#57268F', 1, 'chromatic'],
+  ['gm-light-beige', 'Golden Maple Light Beige', 'GM.928', '#E3B08D', 1, 'earth'],
+  ['gm-comet-streak', 'Golden Maple Comet Streak', 'GM.885', '#76884A', 1, 'chromatic'],
+  ['gm-brown', 'Golden Maple Brown', 'GM.115', '#3E1C1A', 1, 'earth'],
+  ['gm-cool-gray', 'Golden Maple Cool Gray', 'GM.989', '#636067', 1, 'black'],
+  ['gm-micron', 'Golden Maple Micron', 'GM.836', '#424040', 1, 'black'],
+  ['gm-metallic-silver', 'Golden Maple Metallic Silver', 'GM.B001', '#58555C', 1, 'black'],
+  ['gm-metallic-gold', 'Golden Maple Metallic Gold', 'GM.B002', '#81310C', 1, 'chromatic'],
+  ['gm-black', 'Golden Maple Black', 'GM.752', '#1C1C1C', 1.2, 'black'],
 ];
 
 export const PAINTS: readonly Paint[] = ROWS.map(([id, name, pigment, hex, tinting, role]) => ({
