@@ -1,7 +1,7 @@
-import { useId, useState, type CSSProperties } from 'react';
+import { useId, useState, type CSSProperties, type KeyboardEvent, type Ref } from 'react';
 import { parseHex, type Hex } from '../core/index.ts';
 import { useFlash } from './hooks.ts';
-import { CheckIcon, CopyIcon } from './icons.tsx';
+import { CheckIcon, CopyIcon, SearchIcon } from './icons.tsx';
 import { strings } from './strings.ts';
 
 interface SwatchProps {
@@ -54,6 +54,34 @@ export function Slider({ label, value, min, max, step, display, onChange }: Slid
         style={style}
         aria-valuetext={display}
         onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
+interface SearchFieldProps {
+  value: string;
+  onChange(value: string): void;
+  onKeyDown?(e: KeyboardEvent<HTMLInputElement>): void;
+  inputRef?: Ref<HTMLInputElement>;
+  className?: string;
+}
+
+export function SearchField({ value, onChange, onKeyDown, inputRef, className = '' }: SearchFieldProps) {
+  return (
+    <div className={`search ${className}`}>
+      <SearchIcon />
+      <input
+        ref={inputRef}
+        type="search"
+        className="text-input search-input"
+        aria-label={strings.search.label}
+        placeholder={strings.search.placeholder}
+        autoComplete="off"
+        spellCheck={false}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
       />
     </div>
   );

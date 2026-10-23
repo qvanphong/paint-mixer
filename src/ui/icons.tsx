@@ -58,6 +58,13 @@ export const PlusIcon = () => (
   </Icon>
 );
 
+export const SearchIcon = () => (
+  <Icon>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </Icon>
+);
+
 export const ChevronIcon = () => (
   <Icon>
     <path d="M6 9l6 6 6-6" />

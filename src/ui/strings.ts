@@ -98,6 +98,15 @@ export const strings = {
     } satisfies Record<MatchQuality, string>,
   },
 
+  search: {
+    label: 'Search paints',
+    placeholder: 'Search by name or code',
+    noMatch: (query: string) => `No paints match “${query.trim()}”.`,
+    shown: (n: number) => `${n} shown`,
+    selectShown: 'Select shown',
+    clearShown: 'Clear shown',
+  },
+
   owned: {
     filterLabel: 'Only use paints I own',
     count: (n: number) => (n === 0 ? 'No paints chosen yet' : `${n} ${n === 1 ? 'paint' : 'paints'} owned`),

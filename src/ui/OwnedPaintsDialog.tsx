@@ -1,7 +1,8 @@
-import { useId, useMemo, useState, type FormEvent } from 'react';
+import { useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { WHITE, isCustomPaint, type Catalog, type PaintId } from '../core/index.ts';
-import { Swatch } from './controls.tsx';
-import { selectableIds, toggled } from './ownedDraft.ts';
+import { SearchField, Swatch } from './controls.tsx';
+import { selectableIds, toggled, withAll, withoutAll } from './ownedDraft.ts';
+import { filterPaints, matchesQuery } from './paintSearch.ts';
 import { ROLE_ORDER } from './paintRoles.ts';
 import { strings } from './strings.ts';
 import { useModalDialog } from './useModalDialog.ts';
@@ -24,8 +25,24 @@ export function OwnedPaintsDialog({ catalog, initial, onSave, onClose }: Props) 
   const dialog = useModalDialog();
   const titleId = useId();
   const [selected, setSelected] = useState<ReadonlySet<PaintId>>(() => new Set(initial));
+  const [query, setQuery] = useState('');
   const selectable = useMemo(() => selectableIds(catalog), [catalog]);
   const count = selectable.filter((id) => selected.has(id)).length;
+  const filtering = query.trim() !== '';
+  const shown = useMemo(() => filterPaints(catalog.paints, query), [catalog, query]);
+  const shownIds = shown.filter((p) => p.role !== 'white').map((p) => p.id);
+  const whiteShown = matchesQuery(WHITE, query);
+  const nothingShown = shownIds.length === 0 && !whiteShown;
+
+  const onSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Enter would submit the form and Escape would discard the dialog, both losing the selection.
+    if (e.key === 'Enter') e.preventDefault();
+    if (e.key === 'Escape' && filtering) {
+      e.preventDefault();
+      e.stopPropagation();
+      setQuery('');
+    }
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -48,25 +65,42 @@ export function OwnedPaintsDialog({ catalog, initial, onSave, onClose }: Props) 
             {t.title}
           </h2>
           <p className="muted small">{t.intro}</p>
+          <SearchField value={query} onChange={setQuery} onKeyDown={onSearchKeyDown} />
           <div className="owned-tools">
             <p className="owned-selected" role="status">
               {t.selected(count, selectable.length)}
+              {filtering && <span className="muted"> · {strings.search.shown(shownIds.length)}</span>}
             </p>
             <div className="preset-actions">
-              <button type="button" className="btn btn-s" onClick={() => setSelected(new Set(selectable))}>
-                {t.selectAll}
+              <button
+                type="button"
+                className="btn btn-s"
+                disabled={shownIds.length === 0}
+                onClick={() => setSelected((s) => withAll(s, shownIds))}
+              >
+                {filtering ? strings.search.selectShown : t.selectAll}
               </button>
-              <button type="button" className="btn btn-s" onClick={() => setSelected(new Set())}>
-                {t.clear}
+              <button
+                type="button"
+                className="btn btn-s"
+                disabled={shownIds.length === 0}
+                onClick={() => setSelected((s) => withoutAll(s, shownIds))}
+              >
+                {filtering ? strings.search.clearShown : t.clear}
               </button>
             </div>
           </div>
         </div>
 
         <div className="owned-list">
+          {nothingShown && (
+            <p className="muted search-empty" role="status">
+              {strings.search.noMatch(query)}
+            </p>
+          )}
           {ROLE_ORDER.map((role) => {
-            const inRole = catalog.paints.filter((p) => p.role === role);
-            if (inRole.length === 0) return null;
+            const inRole = shown.filter((p) => p.role === role);
+            if (role === 'white' ? !whiteShown : inRole.length === 0) return null;
             return (
               <fieldset key={role} className="owned-group">
                 <legend className="owned-legend">{strings.roles[role]}</legend>
